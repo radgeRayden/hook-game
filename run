@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+tic80 hook.tic -code-watch game.lua -sprites sprites.gif
