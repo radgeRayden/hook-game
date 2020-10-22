@@ -3,11 +3,13 @@
 -- script: lua
 
 --aliases/utils
-local rnd = math.random
-local floor = math.floor
-local ceil = math.ceil
-local fmt = string.format
-local sqrt = math.sqrt
+local rnd,floor,ceil,fmt,sqrt,abs =
+math.random,
+math.floor,
+math.ceil,
+string.format,
+math.sqrt,
+math.abs
 
 -- gamevars
 t = 0
@@ -66,7 +68,15 @@ local function int_cxb (c,b)
     end
 end
 
-local function int_bxb ()
+local function int_bxb (b1,b2)
+    local b1xb = b1.x<b2.x and b1.x or b1.x+b1.w
+    local b2xb = b1.x>b2.x and b2.x or b2.x+b2.w
+    local b1yb = b1.y<b2.y and b1.y or b1.y+b1.h
+    local b2yb = b1.y>b2.y and b2.y or b2.y+b2.h
+    if abs(b2xb-b1xb)<b1.w+b2.w and
+    abs(b2yb-b1yb)<b1.h+b2.h then
+        return true
+    end
 end
 
 local function chk_spr_map(obj,x,y)
@@ -162,9 +172,9 @@ function TIC ()
     draw_map()
 
     -- test cxc collision
+    int = int_bxb({x=plr.x,y=plr.y,w=16,h=16},{x=25,y=25,w=16,h=16})
     rect(25,25,16,16,1)
-    int = int_cxb({x=plr.x,y=plr.y,r=8},{x=25,y=25,w=16,h=16})
-    circ(plr.x,plr.y,8,int and 2 or 3)
+    rect(plr.x,plr.y,16,16,int and 2 or 3)
     -- print(fmt("0x%x", (peek(0x14404 + 1)&0xF0)>>4))
     -- print(string.format("%d,%d", plr.x,plr.y))
     t = t+1
