@@ -35,7 +35,9 @@ local function parse_flags(f)
     }
 end
 
-local function int_cxc ()
+local function int_cxc (c1,c2)
+    local d2 = (c1.x-c2.x)^2+(c1.y-c2.y)^2
+    return d2<(c1.r+c2.r)^2
 end
 
 local function int_cxb ()
@@ -135,7 +137,11 @@ function TIC ()
     cam:follow(plr.x, plr.y)
     draw_map()
 
+    -- test cxc collision
+    circ(25,25,4,1)
+    int = int_cxc({x=25,y=25,r=4},{x=plr.x,y=plr.y,r=8})
+    circ(plr.x,plr.y,8,int and 2 or 3)
     -- print(fmt("0x%x", (peek(0x14404 + 1)&0xF0)>>4))
-    print(string.format("%d,%d", plr.x,plr.y))
+    -- print(string.format("%d,%d", plr.x,plr.y))
     t = t+1
 end
