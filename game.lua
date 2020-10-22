@@ -53,13 +53,14 @@ local function chk_spr_spr(obj1,obj2,x,y)
 end
 
 ents = {}
-local function move(self,dx,dy)
-    local nx,ny = self.x+dx,self.y+dy
-    local free,r=chk_spr_map(self, nx,ny)
-    if not free then return free,r end
-    for k,v in ipairs(ents) do
-        local free,r=chk_spr_spr(self,v,nx,ny)
+local function move(s,dx,dy)
+    local nx,ny = s.x+dx,s.y+dy
+    local free,r=chk_spr_map(s, nx,ny)
+    -- if not free then return free,r end
+    for k,e in ipairs(ents) do
+        local free,r=chk_spr_spr(s,e,nx,ny)
     end
+    s.x,s.y=s.x+dx,s.y+dy
 end
 
 local function ent (name, x,y,w,h,r,spr)
@@ -99,11 +100,42 @@ local function draw_map()
     map(mx,my,30+1,17+1,mx*8-cx,my*8-cy,0,1)
 end
 
+local function handle_input()
+    if (not is_hooking) then
+        --up
+        if btn(0) then
+            plr.dir = 3
+            plr:move(0,-1)
+        end
+        --down
+        if btn(1) then
+            plr.dir = 1
+            plr:move(0,1)
+        end
+        --left
+        if btn(2) then
+            plr.dir = 2
+            plr:move(-1,0)
+        end
+        --right
+        if btn(3) then
+            plr.dir = 0
+            plr:move(1,0)
+        end
+        if (btnp(5) and (not is_hooking)) then
+            is_hooking = true
+            hook_len = 8
+        end
+    end
+end
+
 function TIC ()
     cls(0)
+    handle_input()
     cam:follow(plr.x, plr.y)
     draw_map()
 
-    print(fmt("0x%x", (peek(0x14404 + 1)&0xF0)>>4))
+    -- print(fmt("0x%x", (peek(0x14404 + 1)&0xF0)>>4))
+    print(string.format("%d,%d", plr.x,plr.y))
     t = t+1
 end
