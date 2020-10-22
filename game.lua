@@ -7,6 +7,7 @@ local rnd = math.random
 local floor = math.floor
 local ceil = math.ceil
 local fmt = string.format
+local sqrt = math.sqrt
 
 -- gamevars
 t = 0
@@ -40,7 +41,28 @@ local function int_cxc (c1,c2)
     return d2<(c1.r+c2.r)^2
 end
 
-local function int_cxb ()
+local function dist(x1,y1,x2,y2)
+    return sqrt((x1-x2)^2+(y1-y2)^2)
+end
+
+local function int_cxb (c,b)
+    local bth = c.y>b.y and c.y<b.y+b.h
+    local btw = c.x>b.x and c.x<b.x+b.w
+    -- tl
+    if dist(c.x,c.y,b.x,b.y) < c.r or
+        -- tr
+        dist(c.x,c.y,b.x+b.w,b.y) < c.r or
+        -- bl
+        dist(c.x,c.y,b.x,b.y+b.h) < c.r or
+        -- br
+        dist(c.x,c.y,b.x+b.w,b.y+b.h) < c.r or
+        (bth and c.x<b.x and c.x+c.r>b.x) or
+        (bth and c.x>b.x+b.w and c.x-c.r<b.x+b.w) or
+        (btw and c.y<b.y and c.y+c.r>b.y) or
+        (btw and c.y>b.y+b.h and c.y-c.r<b.y+b.h)
+    then
+        return true
+    end
 end
 
 local function int_bxb ()
@@ -103,26 +125,27 @@ local function draw_map()
 end
 
 local function handle_input()
+    local spd = 0.5
     if (not is_hooking) then
         --up
         if btn(0) then
             plr.dir = 3
-            plr:move(0,-1)
+            plr:move(0,-spd)
         end
         --down
         if btn(1) then
             plr.dir = 1
-            plr:move(0,1)
+            plr:move(0,spd)
         end
         --left
         if btn(2) then
             plr.dir = 2
-            plr:move(-1,0)
+            plr:move(-spd,0)
         end
         --right
         if btn(3) then
             plr.dir = 0
-            plr:move(1,0)
+            plr:move(spd,0)
         end
         if (btnp(5) and (not is_hooking)) then
             is_hooking = true
@@ -138,8 +161,8 @@ function TIC ()
     draw_map()
 
     -- test cxc collision
-    circ(25,25,4,1)
-    int = int_cxc({x=25,y=25,r=4},{x=plr.x,y=plr.y,r=8})
+    rect(25,25,16,16,1)
+    int = int_cxb({x=plr.x,y=plr.y,r=8},{x=25,y=25,w=16,h=16})
     circ(plr.x,plr.y,8,int and 2 or 3)
     -- print(fmt("0x%x", (peek(0x14404 + 1)&0xF0)>>4))
     -- print(string.format("%d,%d", plr.x,plr.y))
