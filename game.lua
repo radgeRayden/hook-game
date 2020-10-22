@@ -46,8 +46,8 @@ local function dist(x1,y1,x2,y2)
 end
 
 local function int_cxb (c,b)
-    local bth = c.y>b.y and c.y<b.y+b.h
-    local btw = c.x>b.x and c.x<b.x+b.w
+    local bth = c.y>=b.y and c.y<=b.y+b.h
+    local btw = c.x>=b.x and c.x<=b.x+b.w
     -- tl
     if dist(c.x,c.y,b.x,b.y) < c.r or
         -- tr
@@ -56,6 +56,7 @@ local function int_cxb (c,b)
         dist(c.x,c.y,b.x,b.y+b.h) < c.r or
         -- br
         dist(c.x,c.y,b.x+b.w,b.y+b.h) < c.r or
+        (btw and bth) or
         (bth and c.x<b.x and c.x+c.r>b.x) or
         (bth and c.x>b.x+b.w and c.x-c.r<b.x+b.w) or
         (btw and c.y<b.y and c.y+c.r>b.y) or
