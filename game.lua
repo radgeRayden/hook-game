@@ -20,6 +20,11 @@ DIRXY = {
     [3] = {0,-1}
 }
 
+cam = {
+    x=0,
+    y=0
+}
+
 -- COLLISION DETECTION
 -- ===================
 
@@ -88,7 +93,7 @@ local function chk_spr_spr(obj1,obj2,x,y)
 end
 
 ents = {}
-local function move(s,dx,dy)
+local function ent_move (s,dx,dy)
     local nx,ny = s.x+dx,s.y+dy
     local free,r=chk_spr_map(s, nx,ny)
     -- if not free then return free,r end
@@ -98,33 +103,35 @@ local function move(s,dx,dy)
     s.x,s.y=s.x+dx,s.y+dy
 end
 
-local function ent (name, x,y,w,h,r,spr)
+local function ent_draw (s)
+    local x,y = cam:to_screen(s.x,s.y)
+    spr(s.spr+s.dir*s.w,x,y,0,1,s.f,s.r,s.w,s.h)
+end
+
+function ent (name, x,y,w,h,r,f,spr)
     local self = {
         x=x,
         y=y,
         w=w,
         h=h,
         r=r,
+        f=f,
         spr=spr,
+        dir=0,
         on=true,
-        move = move
+        move = ent_move,
+        draw = ent_draw
     }
     table.insert(ents,self)
     return self
 end
-local plr = ent("player",0,0,2,2,0,256)
+local plr = ent("player",0,0,2,2,0,0,256)
 local max_hook_len, hook_len, is_hooking = 80,0,false
-
--- CAMERA
--- ======
-cam = {
-    x=0,
-    y=0
-}
 
 function cam:follow(x, y)
     self.x,self.y = x-(240/2),y-(136/2)
 end
+
 function cam:to_screen(x, y)
     return x-self.x, y-self.y
 end
@@ -136,7 +143,7 @@ local function draw_map()
 end
 
 local function handle_input()
-    local spd = 0.5
+    local spd = 1
     if (not is_hooking) then
         --up
         if btn(0) then
@@ -168,13 +175,18 @@ end
 function TIC ()
     cls(0)
     handle_input()
-    cam:follow(plr.x, plr.y)
+    cam:follow(plr.x+8, plr.y+8)
     draw_map()
+    plr:draw()
 
     -- test cxc collision
-    int = int_bxb({x=plr.x,y=plr.y,w=16,h=16},{x=25,y=25,w=16,h=16})
-    rect(25,25,16,16,1)
-    rect(plr.x,plr.y,16,16,int and 2 or 3)
+    -- local pb = {x=plr.x,y=plr.y,w=16,h=16}
+    -- local int = int_bxb(pb,{x=25,y=25,w=16,h=16})
+    -- local pint = int
+    -- rect(25,25,16,16,int and 2 or 3)
+    -- int = int_cxb({x=105,y=105,r=32}, pb)
+    -- circ(105,105,32,int and 2 or 3)
+    -- rect(plr.x,plr.y,16,16,(int or pint) and 2 or 3)
     -- print(fmt("0x%x", (peek(0x14404 + 1)&0xF0)>>4))
     -- print(string.format("%d,%d", plr.x,plr.y))
     t = t+1
