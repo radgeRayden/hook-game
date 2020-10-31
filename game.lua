@@ -3,13 +3,14 @@
 -- script: lua
 
 --aliases/utils
-local rnd,floor,ceil,fmt,sqrt,abs =
+local rnd,floor,ceil,fmt,sqrt,abs,tset =
 math.random,
 math.floor,
 math.ceil,
 string.format,
 math.sqrt,
-math.abs
+math.abs,
+table.insert
 
 -- gamevars
 t = 0
@@ -38,7 +39,7 @@ local responses = {}
 local function parse_flags(f)
     return {
         solid = (f&1)==1,
-        shape = (f&2)==1 and "circ" or "aabb",
+        shape = (f&2)==2 and "circ" or "aabb",
         resp = responses[(f&0xf0)>>4]
     }
 end
@@ -86,6 +87,43 @@ end
 
 local function chk_spr_map(obj,x,y)
     local f = parse_flags(peek(0x14404+obj.spr))
+    local tiles = {}
+    for i=0,obj.w+1 do
+        for j=0,obj.h+1 do
+            tset(tiles, {x//8+i,y//8+j})
+        end
+    end
+    for k,v in ipairs(tiles) do
+        local tile = mget(v[1],v[2])
+        local tf = parse_flags(peek(0x14404+tile))
+        if not tf.solid then
+            goto continue
+        end
+        local result = false
+        if f.shape == "aabb" then
+            if tf.shape == "circ" then
+                if int_cxb({x=v[1]*8+4,y=v[2]*8+4,r=4},{x=x,y=y,w=obj.w*8,h=obj.h*8}) then
+                    return true
+                end
+            else
+                if int_bxb({x=v[1]*8,y=v[2]*8,w=8,h=8},{x=x,y=y,w=obj.w*8,h=obj.h*8}) then
+                    return true
+                end
+            end
+        else
+            local rd = obj.w*4
+            if tf.shape == "circ" then
+                if int_cxc({x=v[1]*8+4,y=v[2]*8+4,r=4},{x=x+rd,y=y+rd,r=rd}) then
+                    return true
+                end
+            else
+                if int_cxb({x=x+rd,y=y+rd,r=rd},{x=v[1]*8,y=v[2]*8,w=8,h=8}) then
+                    return true
+                end
+            end
+        end
+        :: continue ::
+    end
 end
 
 local function chk_spr_spr(obj1,obj2,x,y)
@@ -95,12 +133,12 @@ end
 ents = {}
 local function ent_move (s,dx,dy)
     local nx,ny = s.x+dx,s.y+dy
-    local free,r=chk_spr_map(s, nx,ny)
-    -- if not free then return free,r end
+    local col,r=chk_spr_map(s, nx,ny)
+    if col then return col,r end
     for k,e in ipairs(ents) do
         local free,r=chk_spr_spr(s,e,nx,ny)
     end
-    s.x,s.y=s.x+dx,s.y+dy
+    s.x,s.y=nx,ny
 end
 
 local function ent_draw (s)
