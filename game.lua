@@ -114,6 +114,7 @@ local function chk_col_col(a,b)
 end
 local function chk_spr_map(obj,x,y)
     local f = parse_flags(peek(0x14404+obj.spr))
+    if not f.solid then return false end
     local tiles = {}
     for i=0,obj.w+1 do
         for j=0,obj.h+1 do
@@ -134,6 +135,7 @@ end
 
 local function chk_spr_spr(a,b,x1,y1)
     local fa,fb = parse_flags(peek(0x14404+a.spr)), parse_flags(peek(0x14404+b.spr))
+    if not fa.solid or not fb.solid then return false end
     return chk_col_col({flags=fa,x=x1,y=y1,w=a.w*8,h=a.h*8},{flags=fb,x=b.x,y=b.y,w=b.w*8,h=b.h*8})
 end
 
