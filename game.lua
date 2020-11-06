@@ -132,9 +132,9 @@ local function chk_spr_map(obj,x,y)
     end
 end
 
-local function chk_spr_spr(obj1,obj2,x1,y1)
-    local f1,f2 = parse_flags(peek(0x14404+obj1.spr)), parse_flags(peek(0x14404+obj2.spr))
-    local blocked,r = chk_col_col()
+local function chk_spr_spr(a,b,x1,y1)
+    local fa,fb = parse_flags(peek(0x14404+a.spr)), parse_flags(peek(0x14404+b.spr))
+    return chk_col_col({flags=fa,x=x1,y=y1,w=a.w*8,h=a.h*8},{flags=fb,x=b.x,y=b.y,w=b.w*8,h=b.h*8})
 end
 
 ents = {}
@@ -143,7 +143,10 @@ local function ent_move (s,dx,dy)
     local col,r=chk_spr_map(s, nx,ny)
     if col then return col,r end
     for k,e in ipairs(ents) do
-        local free,r=chk_spr_spr(s,e,nx,ny)
+        if e ~= s then
+            local col,r=chk_spr_spr(s,e,nx,ny)
+            if col then return col,r end
+        end
     end
     s.x,s.y=nx,ny
 end
