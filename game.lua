@@ -104,11 +104,11 @@ local function chk_col_col(a,b)
         if bf.shape == "circ" then
             local brd = b.w/2
             if int_cxc({x=b.x+brd,y=b.y+brd,r=brd},{x=a.x+ard,y=a.y+ard,r=ard}) then
-                return true
+                return true,r
             end
         else
             if int_cxb({x=a.x+ard,y=a.y+ard,r=ard},{x=b.x,y=b.y,w=b.w,h=b.h}) then
-                return true
+                return true,r
             end
         end
     end
