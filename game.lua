@@ -87,15 +87,16 @@ end
 
 local function chk_col_col(a,b)
     local af,bf = a.flags,b.flags
+    local r = bf.resp
     if af.shape == "aabb" then
         if bf.shape == "circ" then
             local brd = b.w/2
             if int_cxb({x=b.x+brd,y=b.y+brd,r=brd},{x=a.x,y=a.y,w=a.w,h=a.h}) then
-                return true
+                return true,r
             end
         else
             if int_bxb({x=b.x,y=b.y,w=b.w,h=b.h},{x=a.x,y=a.y,w=a.w,h=a.h}) then
-                return true
+                return true,r
             end
         end
     else
