@@ -85,6 +85,33 @@ local function int_bxb (b1,b2)
     end
 end
 
+local function chk_col_col(a,b)
+    local af,bf = a.flags,b.flags
+    if af.shape == "aabb" then
+        if bf.shape == "circ" then
+            local brd = b.w/2
+            if int_cxb({x=b.x+brd,y=b.y+brd,r=brd},{x=a.x,y=a.y,w=a.w,h=a.h}) then
+                return true
+            end
+        else
+            if int_bxb({x=b.x,y=b.y,w=b.w,h=b.h},{x=a.x,y=a.y,w=a.w,h=a.h}) then
+                return true
+            end
+        end
+    else
+        local ard = a.w/2
+        if bf.shape == "circ" then
+            local brd = b.w/2
+            if int_cxc({x=b.x+brd,y=b.y+brd,r=brd},{x=a.x+ard,y=a.y+ard,r=ard}) then
+                return true
+            end
+        else
+            if int_cxb({x=a.x+ard,y=a.y+ard,r=ard},{x=b.x,y=b.y,w=b.w,h=b.h}) then
+                return true
+            end
+        end
+    end
+end
 local function chk_spr_map(obj,x,y)
     local f = parse_flags(peek(0x14404+obj.spr))
     local tiles = {}
@@ -99,35 +126,15 @@ local function chk_spr_map(obj,x,y)
         if not tf.solid then
             goto continue
         end
-        local result = false
-        if f.shape == "aabb" then
-            if tf.shape == "circ" then
-                if int_cxb({x=v[1]*8+4,y=v[2]*8+4,r=4},{x=x,y=y,w=obj.w*8,h=obj.h*8}) then
-                    return true
-                end
-            else
-                if int_bxb({x=v[1]*8,y=v[2]*8,w=8,h=8},{x=x,y=y,w=obj.w*8,h=obj.h*8}) then
-                    return true
-                end
-            end
-        else
-            local rd = obj.w*4
-            if tf.shape == "circ" then
-                if int_cxc({x=v[1]*8+4,y=v[2]*8+4,r=4},{x=x+rd,y=y+rd,r=rd}) then
-                    return true
-                end
-            else
-                if int_cxb({x=x+rd,y=y+rd,r=rd},{x=v[1]*8,y=v[2]*8,w=8,h=8}) then
-                    return true
-                end
-            end
-        end
+        local blocked,r = chk_col_col({flags=f,x=x,y=y,w=obj.w*8,h=obj.h*8},{flags=tf,x=v[1]*8,y=v[2]*8,w=8,h=8})
+        if blocked then return true,r end
         :: continue ::
     end
 end
 
-local function chk_spr_spr(obj1,obj2,x,y)
+local function chk_spr_spr(obj1,obj2,x1,y1)
     local f1,f2 = parse_flags(peek(0x14404+obj1.spr)), parse_flags(peek(0x14404+obj2.spr))
+    local blocked,r = chk_col_col()
 end
 
 ents = {}
